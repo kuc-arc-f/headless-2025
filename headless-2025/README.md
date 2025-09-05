@@ -54,5 +54,11 @@ database_id = ""
 npm run build
 npm run dev
 ```
+
+***
+### blog
+
+https://zenn.dev/knaka0209/scraps/ff4752e84390ea
+
 ***
 
