@@ -15,6 +15,11 @@ Rust Headless CMS , workers-rs
 * cargo 1.88.0
 
 ***
+### API document
+
+https://github.com/kuc-arc-f/headless-2025/blob/main/headless-2025/document/api.md
+
+***
 ### setup
 * wrangler.toml
 * API_KEY: API auth key
