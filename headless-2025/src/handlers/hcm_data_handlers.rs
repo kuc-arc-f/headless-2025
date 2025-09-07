@@ -155,15 +155,23 @@ pub async fn handle_list_data(mut req: Request, ctx: RouteContext<()>) -> worker
 
     // 特定のキーを取得
     let params: Vec<(_, _)> = url.query_pairs().collect();
-    let contentTmp = params.iter().find(|(k, _)| k == "content").map(|(_, v)| v.to_string());
-    let content = contentTmp.unwrap_or("".into());
+    let content_tmp = params.iter().find(|(k, _)| k == "content").map(|(_, v)| v.to_string());
+    let content = content_tmp.unwrap_or("".into());
+    let order_tmp = params.iter().find(|(k, _)| k == "order").map(|(_, v)| v.to_string());
+    let order_str = order_tmp.unwrap_or("".into());
+
     console_log!("content: {}", content);
-    let sqlWhere = format!(" WHERE content = '{}'" ,  content);
-    console_log!("sqlWhere: {}", sqlWhere);
+    console_log!("order: {}", order_str);
+    let mut order_sql = "ORDER BY created_at ASC";
+    if order_str != "asc".to_string() {
+        order_sql = "ORDER BY created_at DESC";
+    }
+
+    let sql_where = format!(" WHERE content = '{}'" ,  content);
+    console_log!("sql_where: {}", sql_where);
 
     let query = format!("SELECT id, content, data, created_at, updated_at 
-    FROM hcm_data {}
-    ORDER BY created_at DESC", sqlWhere);
+    FROM hcm_data {} {}", sql_where, order_sql);
     console_log!("query: {}", query);
 
     let stmt = db.prepare(query);
