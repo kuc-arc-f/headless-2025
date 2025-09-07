@@ -70,6 +70,7 @@ async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
         .get_async("/api/admin/data_list", handlers::hcm_admin_handlers::handle_list_data)
 
         .get_async("/api/content/list", handlers::hcm_data_handlers::handle_list_content)
+        .get_async("/api/data/getone", handlers::hcm_data_handlers::getone_data)
         .get_async("/api/data/list", handlers::hcm_data_handlers::handle_list_data)
         .post_async("/api/data/create", handlers::hcm_data_handlers::handle_create_data)
         .post_async("/api/data/delete", handlers::hcm_data_handlers::handle_delete_data)

@@ -55,6 +55,12 @@ struct ItemCreateResponse {
     data: Item,
 }
 
+/**
+*
+* @param
+*
+* @return
+*/
 fn valid_authkey(req: &Request, sendkey: &str) -> Result<bool> {
     if let Some(api_key) = req.headers().get("Authorization")? {
         console_log!("API Key:{}", api_key);
@@ -73,6 +79,12 @@ fn valid_authkey(req: &Request, sendkey: &str) -> Result<bool> {
     }
 }
 
+/**
+*
+* @param
+*
+* @return
+*/
 pub async fn handle_list_content(mut req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {    
     let db = ctx.env.d1("DB")?;
     let sendkey = ctx.env.var("API_KEY")?.to_string();
@@ -110,6 +122,12 @@ pub async fn handle_list_content(mut req: Request, ctx: RouteContext<()>) -> wor
     })
 }
 
+/**
+*
+* @param
+*
+* @return
+*/
 pub async fn handle_list_data(mut req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
     let db = ctx.env.d1("DB")?;
     let sendkey = ctx.env.var("API_KEY")?.to_string();
@@ -172,7 +190,84 @@ pub async fn handle_list_data(mut req: Request, ctx: RouteContext<()>) -> worker
     })
 }
 
+/**
+*
+* @param
+*
+* @return
+*/
+pub async fn getone_data(mut req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
+    let db = ctx.env.d1("DB")?;
+    let sendkey = ctx.env.var("API_KEY")?.to_string();
+    let valid = valid_authkey(&req, &sendkey);
+    match valid {
+        Ok(false) => {
+            console_log!("NG , auth");
+            return Response::error("NG , auth", 401);
+        },
+        Ok(true) => {
+            console_log!("OK , auth");
+        },
+        Err(e) => {
+            console_log!("NG, nothing auth-key: {}", e);
+            return Response::error("NG, nothing auth-key", 400);
+        },
+    }    
 
+    // URL 全体を取得
+    let url = req.url()?;
+    
+    // Query string 全体
+    let query = url.query().unwrap_or("");
+    console_log!("query string: {}", query);
+
+    // 特定のキーを取得
+    let params: Vec<(_, _)> = url.query_pairs().collect();
+    let id_tmp = params.iter().find(|(k, _)| k == "id").map(|(_, v)| v.to_string());
+    let id_str = id_tmp.unwrap_or("".into());
+    console_log!("id_str: {}", id_str);
+    if id_str.trim().is_empty() {
+        return Response::error("NG, id nothing", 400);
+    }
+
+    let sql_where = format!(" WHERE  id = {}" ,  id_str);
+    console_log!("sql_where: {}", sql_where);
+
+    let query = format!("SELECT id, content, data, created_at, updated_at 
+    FROM hcm_data {}
+    ORDER BY created_at DESC", sql_where);
+    console_log!("query: {}", query);
+
+    let stmt = db.prepare(query);
+    let result = stmt.all().await?;
+    
+    let mut todos = Vec::new();
+    
+    if let Ok(results) = result.results::<serde_json::Value>() {
+        for row in results {
+            let todo = Item {
+                id: row["id"].as_f64().unwrap_or(0.0) as u32,
+                content: row["content"].as_str().unwrap_or_default().to_string(),
+                data: row["data"].as_str().map(|s| s.to_string()),
+                created_at: row["created_at"].as_str().unwrap_or_default().to_string(),
+                updated_at: row["updated_at"].as_str().unwrap_or_default().to_string(),
+            };
+            todos.push(todo);
+        }
+    }
+    
+    Response::from_json(&TodoListResponse {
+        status: 200,
+        data: todos,
+    })
+}
+
+/**
+*
+* @param
+*
+* @return
+*/
 pub async fn handle_create_data(mut req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
     let db = ctx.env.d1("DB")?;
     let sendkey = ctx.env.var("API_KEY")?.to_string();
@@ -228,6 +323,12 @@ pub async fn handle_create_data(mut req: Request, ctx: RouteContext<()>) -> work
     }
 }
 
+/**
+*
+* @param
+*
+* @return
+*/
 pub async fn handle_delete_data(mut req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
     let sendkey = ctx.env.var("API_KEY")?.to_string();
     let valid = valid_authkey(&req, &sendkey);
@@ -258,6 +359,12 @@ pub async fn handle_delete_data(mut req: Request, ctx: RouteContext<()>) -> work
     })
 }
 
+/**
+*
+* @param
+*
+* @return
+*/
 pub async fn handle_update_todo(mut req: Request, ctx: RouteContext<()>) -> worker::Result<Response> {
     let sendkey = ctx.env.var("API_KEY")?.to_string();
     let valid = valid_authkey(&req, &sendkey);
