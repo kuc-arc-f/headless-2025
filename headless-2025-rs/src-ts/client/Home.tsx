@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import {Link } from 'react-router-dom';
 import React from 'react';
 import { Item, NewItem } from './types/Item';
 import { itemsApi } from './api/items';
@@ -117,13 +118,13 @@ function App() {
                           {item}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <a href={`/data?content=${item}`}>
+                          <Link to={`/data?content=${item}`}>
                             <button
                               className="text-indigo-600 hover:text-indigo-900 mr-4"
                             >
                               Show
                             </button>
-                          </a>
+                          </Link>
 {/*
                           <button
                             onClick={() => handleDelete(item.id)}

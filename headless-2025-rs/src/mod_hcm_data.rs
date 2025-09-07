@@ -57,6 +57,11 @@ pub struct UpdateTodo {
 pub struct SearchParams {
     content: Option<String>,
 }
+#[derive(Deserialize, Debug)]
+pub struct GetoneParams {
+    id: Option<String>,
+}
+
 
 fn valid_authkey(headers: HeaderMap, sendkey: &str) -> bool {
     if let Some(auth) = headers.get("Authorization") {
@@ -102,6 +107,42 @@ pub async fn handle_list_content(
     }
     //tracing::info!("todo {:?}", todos);
 
+    Ok(Json(todos))
+}
+
+pub async fn getone_data(
+    State(pool): State<Arc<SqlitePool>>,
+    Query(params): Query<GetoneParams>,
+    headers: HeaderMap
+) -> Result<Json<Vec<Item>>, StatusCode> {
+    let id = format!("#id={:?}", params.id);
+    tracing::info!("id={}", id);
+
+    let api_key = env::var("API_KEY")
+      .expect("API_KEY must be set");
+
+    let valid = valid_authkey(headers , &api_key);
+    if valid == false {
+        tracing::info!("NG , authkey");
+        return Err(StatusCode::BAD_REQUEST);
+    }
+    let rows = sqlx::query("SELECT * FROM hcm_data WHERE id= ? ;
+    ")
+    .bind(&params.id)
+    .fetch_all(pool.as_ref())
+    .await
+    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let todos: Vec<Item> = rows
+        .into_iter()
+        .map(|row| Item {
+            id: row.get("id"),
+            content: row.get("content"),
+            data: row.get("data"),
+            created_at: row.get("created_at"),
+            updated_at: row.get("updated_at"),
+        })
+        .collect();    
     Ok(Json(todos))
 }
 

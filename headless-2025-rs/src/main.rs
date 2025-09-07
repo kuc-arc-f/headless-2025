@@ -95,12 +95,15 @@ async fn main() {
 
     // `ServeDir` ミドルウェアを初期化
     let serve_dir = ServeDir::new(public_dir);
+    
     let app = Router::new()
         .nest_service("/static", serve_dir)
         .route("/api/login", post(handle_login_post))
         .route("/api/admin/content_list", get(mod_hcm_admin::handle_list_content))
         .route("/api/admin/data_list", get(mod_hcm_admin::list_admin))        
         .route("/api/content/list", get(mod_hcm_data::handle_list_content))
+
+        .route("/api/data/getone", get(mod_hcm_data::getone_data))
         .route("/api/data/list", get(mod_hcm_data::list_data))
         .route("/api/data/create", post(mod_hcm_data::create_data))
         .route("/api/data/delete", post(mod_hcm_data::delete_data))
