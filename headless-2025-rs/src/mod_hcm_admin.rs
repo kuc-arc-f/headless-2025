@@ -106,7 +106,7 @@ pub async fn list_admin(
 
     let rows = sqlx::query("SELECT id, content, data ,created_at, updated_at 
     FROM hcm_data
-    WHERE content = ?
+    WHERE content = ? ORDER BY created_at ASC
     ")
         .bind(&params.content)
         .fetch_all(pool.as_ref())

@@ -56,6 +56,7 @@ pub struct UpdateTodo {
 #[derive(Deserialize, Debug)]
 pub struct SearchParams {
     content: Option<String>,
+    order: Option<String>,
 }
 #[derive(Deserialize, Debug)]
 pub struct GetoneParams {
@@ -78,7 +79,12 @@ fn valid_authkey(headers: HeaderMap, sendkey: &str) -> bool {
         return false;
     }
 }
-
+/**
+*
+* @param
+*
+* @return
+*/
 #[tracing::instrument]
 pub async fn handle_list_content(
     State(pool): State<Arc<SqlitePool>>, headers: HeaderMap
@@ -110,6 +116,12 @@ pub async fn handle_list_content(
     Ok(Json(todos))
 }
 
+/**
+*
+* @param
+*
+* @return
+*/
 pub async fn getone_data(
     State(pool): State<Arc<SqlitePool>>,
     Query(params): Query<GetoneParams>,
@@ -146,13 +158,21 @@ pub async fn getone_data(
     Ok(Json(todos))
 }
 
+/**
+*
+* @param
+*
+* @return
+*/
 #[tracing::instrument]
 pub async fn list_data(
     State(pool): State<Arc<SqlitePool>>,
     Query(params): Query<SearchParams>,
     headers: HeaderMap
 ) -> Result<Json<Vec<Item>>, StatusCode> {
-    //let content = format!("#content={:?}", params.content);
+    let order = format!("#order={:?}", params.order);
+    tracing::info!("order={}", order);
+
     let api_key = env::var("API_KEY")
       .expect("API_KEY must be set");
 
@@ -161,12 +181,27 @@ pub async fn list_data(
         tracing::info!("NG , authkey");
         return Err(StatusCode::BAD_REQUEST);
     }
+    let mut get_order = &params.order;
+    let mut order_sql = "ORDER BY created_at ASC";
 
-    let rows = sqlx::query("SELECT id, content, data ,created_at, updated_at 
+    let order_str: &str = params.order.as_deref().unwrap_or("asc");
+    let content_str: &str = params.content.as_deref().unwrap_or("asc");
+
+    if order_str != "asc".to_string() {
+        order_sql = "ORDER BY created_at DESC";
+    }
+    tracing::info!("order_sql={}", order_sql);
+
+    let sql = format!("SELECT id, content, data ,created_at, updated_at 
     FROM hcm_data
-    WHERE content = ?
-    ")
-        .bind(&params.content)
+    WHERE content = '{}'
+    {}
+    "
+    , content_str , order_sql
+   );
+    tracing::info!("sql={}", &sql);
+    //.bind(&params.content)
+    let rows = sqlx::query(&sql)
         .fetch_all(pool.as_ref())
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
@@ -186,7 +221,12 @@ pub async fn list_data(
     Ok(Json(todos))
 }
 
-
+/**
+*
+* @param
+*
+* @return
+*/
 pub async fn create_data(
     State(pool): State<Arc<SqlitePool>>,
     headers: HeaderMap,
@@ -225,7 +265,12 @@ pub async fn create_data(
     Ok(Json(todo))
 }
 
-
+/**
+*
+* @param
+*
+* @return
+*/
 pub async fn delete_data(
     State(pool): State<Arc<SqlitePool>>,
     headers: HeaderMap,
