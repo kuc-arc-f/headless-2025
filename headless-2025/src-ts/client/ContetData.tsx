@@ -133,7 +133,7 @@ function App() {
                           {item.id}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {JSON.stringify(item.data)}
+                          {item.data_list}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <button

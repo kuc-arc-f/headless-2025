@@ -5,7 +5,7 @@ import {Link } from 'react-router-dom';
 function Page() {
     return (
     <div>
-        <Link to="/foo" class="ms-2">Home</Link>
+        <Link to="/" class="ms-2">Home</Link>
         <hr />
     </div>
     );

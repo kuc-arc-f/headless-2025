@@ -26,7 +26,10 @@ const dataUtil = {
         target = element.data;
         try{
           target = JSON.parse(element.data);
+          let tmpData = element.data;
+          tmpData = tmpData.substring(0, 50);
           element.data = target;
+          element.data_list = tmpData;
         }catch(e){
           console.error(e);
         }
