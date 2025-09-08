@@ -73,6 +73,7 @@ async fn main() {
 
         .route("/api/content/list", get(hcm_content_list))
         .route("/api/data/list", get(hcm_data_list))
+        .route("/api/data/getone", get(hcm_data_getone))
         .route("/api/data/create", post(hcm_data_create))
         .route("/api/data/delete", post(hcm_data_delete))
         .route("/api/data/update", post(hcm_data_update))

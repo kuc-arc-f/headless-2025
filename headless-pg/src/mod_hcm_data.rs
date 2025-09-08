@@ -51,6 +51,11 @@ pub struct SearchParams {
     order: Option<String>,
 }
 
+#[derive(Deserialize, Debug)]
+pub struct GetoneParams {
+    id: Option<String>,
+}
+
 #[derive(Debug, Deserialize)]
 pub struct CreateTodo {
     content: String,
@@ -163,6 +168,51 @@ pub async fn hcm_data_list(
         })
         .collect();
     let out = serde_json::to_string(&todoItems).unwrap();
+    Ok(out.to_string())
+}
+
+pub async fn hcm_data_getone(
+    State(state): State<super::AppState>,
+    Query(params): Query<GetoneParams>,
+    headers: HeaderMap
+) -> Result<String, StatusCode> {
+    let id: &str = params.id.as_deref().unwrap_or("asc");
+    println!("id={}", id);
+    let api_key = env::var("API_KEY")
+      .expect("API_KEY must be set");
+
+    let valid = valid_authkey(headers , &api_key);
+    if valid == false {
+        println!("NG , authkey");
+        return Err(StatusCode::BAD_REQUEST);
+    }
+    let sql = format!("SELECT id, content, data ,
+    to_char(created_at, 'YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"') AS created_at ,
+    to_char(updated_at, 'YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"') AS updated_at
+    
+    FROM hcm_data
+    WHERE id = {}
+    "
+    , id
+    );
+    println!("sql={}", sql);
+
+    let rows = sqlx::query(&sql)
+    .fetch_all(&state.pool)
+    .await
+    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let todos: Vec<Item> = rows
+        .into_iter()
+        .map(|row| Item {
+            id: row.get("id"),
+            content: row.get("content"),
+            data: row.get("data"),
+            created_at: row.get("created_at"),
+            updated_at: row.get("updated_at"),
+        })
+        .collect();
+    let out = serde_json::to_string(&todos).unwrap();
     Ok(out.to_string())
 }
 
