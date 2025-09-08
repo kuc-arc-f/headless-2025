@@ -14,6 +14,11 @@ postgres Rust Axum , Headless CMS
 * cargo 1.88.0
 
 ***
+### API document
+
+https://github.com/kuc-arc-f/headless-2025/blob/main/headless-pg/document/api.md
+
+***
 ### setup
 * .env
 * API_KEY: API auth key
