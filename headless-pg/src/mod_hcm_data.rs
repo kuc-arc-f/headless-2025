@@ -104,15 +104,20 @@ pub async fn hcm_content_list(
         return Err(StatusCode::BAD_REQUEST);
     }
 
-    // 5) 構造体へマッピングして一覧取得
-    let todoItems: Vec<Todo> = sqlx::query_as::<_, Todo>("SELECT distinct content
-    FROM hcm_data;")
+    let rows = sqlx::query("SELECT distinct content 
+    FROM hcm_data;
+    ")
         .fetch_all(&state.pool)
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-    //println!("Mapped structs > {:?}", todoItems);
 
-    let out = serde_json::to_string(&todoItems).unwrap();
+    let mut todos: Vec<String> = Vec::new();
+    for row in rows {
+        let mut content: String =  row.get("content");
+        todos.push(content.to_string());
+    }
+
+    let out = serde_json::to_string(&todos).unwrap();
     Ok(out.to_string())
 }
 

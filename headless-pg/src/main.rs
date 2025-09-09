@@ -20,8 +20,10 @@ use tower_http::services::ServeDir;
 
 mod handlers;
 mod mod_hcm_data;
+mod mod_hcm_admin;
 use handlers::*;
 use mod_hcm_data::*;
+use mod_hcm_admin::*;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -70,6 +72,8 @@ async fn main() {
         .route("/api/create", post(create_todo))
         .route("/api/delete", post(delete_todo))
         .route("/api/update", post(update_todo))  
+        .route("/api/admin/content_list", get(hcm_admin_content_list))
+        .route("/api/admin/data_list", get(hcm_admin_data_list))        
 
         .route("/api/content/list", get(hcm_content_list))
         .route("/api/data/list", get(hcm_data_list))
