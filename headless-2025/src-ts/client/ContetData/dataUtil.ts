@@ -21,8 +21,8 @@ const dataUtil = {
       const ret = [];
       let target = "";
       items.forEach((element) => {
-        console.log("id=", element.id);
-        console.log(element.data);
+        //console.log("id=", element.id);
+        //console.log(element.data);
         target = element.data;
         try{
           target = JSON.parse(element.data);
