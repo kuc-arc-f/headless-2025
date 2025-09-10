@@ -40,4 +40,8 @@ npm run build
 npm run dev
 ```
 ***
+### blog
 
+https://zenn.dev/link/comments/e281dbe3f90b94
+
+***
