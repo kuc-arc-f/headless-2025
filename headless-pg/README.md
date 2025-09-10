@@ -22,9 +22,12 @@ https://github.com/kuc-arc-f/headless-2025/blob/main/headless-pg/document/api.md
 ### setup
 * .env
 * API_KEY: API auth key
+* USER_NAME , PASSWORD : login name, password
 
 ```
 API_KEY=123
+USER_NAME = "user1@example.com"
+PASSWORD = "1234"
 ```
 ***
 * TABLE: table.sql
