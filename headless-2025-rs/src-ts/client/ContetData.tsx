@@ -1,4 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import {
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  flexRender,
+  ColumnDef,
+} from "@tanstack/react-table";
+
 import { Item, NewItem } from './types/Item';
 import { itemsApi } from './ContetData/api';
 import dataUtil from './ContetData/dataUtil';
@@ -14,12 +22,39 @@ function App() {
   const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
   const [editingItem, setEditingItem] = useState<undefined>();
 
+  const columns: ColumnDef<Person>[] = [
+    { header: "ID", accessorKey: "id" },
+    { header: "DataJson", accessorKey: "data_list" },
+    {
+      header: "操作",
+      id: "display",
+      cell: ({ row }) => {
+        //console.log(row.original);
+        return (
+          <button
+            onClick={() => handleEdit(row.original)}
+            className="text-indigo-600 hover:text-indigo-900 mr-4"
+          >
+            [ Show ]
+          </button>        
+        )
+      },
+    },  
+  ];
+
+  const table = useReactTable({
+    data: items,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(), // ページネーション追加
+  });
+
   // アイテム一覧を取得
   const fetchItems = async () => {
     try {
       setLoading(true);
       const data = await itemsApi.getAll(contentId);
-      //console.log(data);
+      console.log(data);
       setItems(data);
     } catch (err) {
       setError('アイテムの取得に失敗しました');
@@ -97,65 +132,95 @@ function App() {
           Back
           </button>
         </a>
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-white rounded-lg shadow pb-8">
           <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-900">Data</h1>
           </div>
 
-          <div className="p-6">
+          <div className="p-2">
             {items.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 アイテムがありません
               </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        ID
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        data
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        操作
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {items.map((item) => (
-                      <tr key={item.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {item.id}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {JSON.stringify(item.data)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <button
-                            onClick={() => handleEdit(item)}
-                            className="text-indigo-600 hover:text-indigo-900 mr-4"
-                          >
-                            [ Show ]
-                          </button>       
-                          {/*
-                          <button
-                            onClick={() => handleDelete(item.id)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            削除
-                          </button>
-                          */}                   
-
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+            ) : ""}
           </div>
+          <table className="border border-gray-300 w-full">
+            <thead>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id} className="bg-gray-100">
+                  {headerGroup.headers.map((header) => (
+
+                    <th key={header.id} className="border p-2 text-left">
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                      {header.id === "name" ? (<span>
+                        <button onClick={() => { sortStart("name", sortName); }}>
+                          <span className="ms-2 text-green-600">sort</span>
+                        </button>
+                      </span>) : ""}
+                      {header.id === "age" ? (<span>
+                        <button onClick={() => { sortStart("age", sortAge); }}>
+                          <span className="ms-2 text-green-600">sort</span>
+                        </button>
+                      </span>) : ""}                      
+                      {header.id === "weight" ? (<span>
+                        <button onClick={() => { sortStart("weight", sortWeight); }}>
+                          <span className="ms-2 text-green-600">sort</span>
+                        </button>
+                      </span>) : ""}                      
+
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {table.getRowModel().rows.map((row) => (
+                <tr key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id} className="border p-2">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="flex items-center gap-2 mt-4">
+            <button
+              className="px-2 py-1 border rounded disabled:opacity-50"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              ← 前へ
+            </button>
+            <button
+              className="px-2 py-1 border rounded disabled:opacity-50"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              次へ →
+            </button>
+            <span className="ml-2">
+              Page{" "}
+              <strong>
+                {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}
+              </strong>
+            </span>
+            <select
+              className="ml-2 border p-1"
+              value={table.getState().pagination.pageSize}
+              onChange={(e) => table.setPageSize(Number(e.target.value))}
+            >
+              {[5, 10, 20].map((pageSize) => (
+                <option key={pageSize} value={pageSize}>
+                  {pageSize} rows
+                </option>
+              ))}
+            </select>
+          </div>
+
         </div>
       </div>
 
