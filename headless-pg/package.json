@@ -17,7 +17,8 @@
   "dependencies": {
     "esbuild": "^0.25.5",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^6.27.0"
   },
   "devDependencies": {
     "@types/react": "^19.1.8",

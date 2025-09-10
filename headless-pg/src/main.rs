@@ -1,5 +1,6 @@
 use axum::{
     extract::State,
+    http::HeaderMap,
     http::StatusCode,
     response::{Json, Html, IntoResponse},
     routing::{get, post},
@@ -29,9 +30,43 @@ use mod_hcm_admin::*;
 pub struct AppState {
     pub pool: PgPool,
 }
+#[derive(Debug, Deserialize)]
+struct LoginRequest {
+    username: String,
+    password: String,
+}
 
 
-async fn root() -> Html<&'static str> {
+async fn root(headers: HeaderMap) -> Html<&'static str> {
+    let login_htm = "<!doctype html>
+<html>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>welcome</title>
+    <script src='https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4'></script>
+  </head>
+  <body>
+    <div id='app'></div>
+    <script type='module' src='/static/client.js'></script>
+    <script type='module' src='/static/move_login.js'></script>
+  <body>
+</html>
+";
+    let has_session_cookie = headers
+        .get("cookie")
+        .and_then(|value| value.to_str().ok())
+        .map(|cookies| {
+            cookies
+                .split(';')
+                .any(|cookie| cookie.trim().starts_with("userid="))
+        })
+        .unwrap_or(false);
+
+    if has_session_cookie == false {
+        return Html(&login_htm);
+    };
+
     let s1 = "<!doctype html>
 <html>
   <head>
@@ -49,6 +84,25 @@ async fn root() -> Html<&'static str> {
   Html(&s1)
 }
 
+
+async fn handle_login_post(
+    Json(payload): Json<LoginRequest>
+) -> Result<String , StatusCode> {
+    //tracing::info!("payload={:?}", payload);
+    println!("name={}", payload.username);
+    println!("password={}", payload.password);
+    let username = payload.username;
+    let password = payload.password;
+
+    let env_username = env::var("USER_NAME").expect("USER_NAME must be set");
+    let env_password = env::var("PASSWORD").expect("PASSWORD must be set");
+    //Ok("OK".to_string())
+    if username == env_username && password == env_password {
+        return Ok("OK".to_string())
+    }else{
+        return Err(StatusCode::BAD_REQUEST);
+    }
+}
 #[tokio::main]
 async fn main() {
     dotenv().ok();
@@ -68,6 +122,7 @@ async fn main() {
 
     let app = Router::new()
         .nest_service("/static", serve_dir)
+        .route("/api/login", post(handle_login_post))
         .route("/api/list", get(get_todos))
         .route("/api/create", post(create_todo))
         .route("/api/delete", post(delete_todo))
@@ -83,6 +138,8 @@ async fn main() {
         .route("/api/data/update", post(hcm_data_update))
 
         .route("/", get(root))
+        .route("/data", get(root))
+        .route("/login", get(root))
         .with_state(state);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
