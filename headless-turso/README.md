@@ -10,8 +10,13 @@
 
 Rust Axum + Turso SDK  , Headless CMS
 
-* rustc 1.88.0
-* cargo 1.88.0
+* rustc 1.90.0
+* cargo 1.90.0
+
+***
+### API document
+
+https://github.com/kuc-arc-f/headless-2025pri/blob/main/headless-turso/document/api.md
 
 ***
 ### setup
