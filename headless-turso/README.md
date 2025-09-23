@@ -16,7 +16,7 @@ Rust Axum + Turso SDK  , Headless CMS
 ***
 ### API document
 
-https://github.com/kuc-arc-f/headless-2025pri/blob/main/headless-turso/document/api.md
+https://github.com/kuc-arc-f/headless-2025/blob/main/headless-turso/document/api.md
 
 ***
 ### setup
