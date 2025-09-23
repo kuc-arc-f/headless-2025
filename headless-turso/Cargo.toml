@@ -1,0 +1,18 @@
+[package]
+name = "headless-turso"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.100"
+axum = "0.7.5"
+axum-extra = { version = "0.10.1", features = ["cookie"] }
+chrono = { version = "0.4", features = ["serde"] }
+dotenvy = "0.15"
+libsql = "0.9.23"
+tokio = { version = "1.0", features = ["full"] }
+tower-http = { version = "0.6.6", features = ["fs", "trace"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
