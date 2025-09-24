@@ -31,6 +31,38 @@ start();
 ```
 
 ***
+
+### GetOne
+
+* your-key: API_KEY 
+* content: data type
+* id: id data
+
+```
+
+
+const start = async function() {
+  try{
+    const response = await fetch("http://localhost:3000/api/data/getone?content=todo&id=5", {
+      method: 'GET',
+      headers: {
+        'Authorization': 'your-key',
+      }
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      console.log(text)
+      throw new Error('Failed to create item');
+    }
+    const json = await response.json();
+    console.log(json)
+  }catch(e){console.log(e)}
+}
+start();
+
+```
+
+***
 ### Create
 
 * your-key: API_KEY 
