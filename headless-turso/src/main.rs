@@ -95,12 +95,10 @@ async fn main() {
         .route("/api/content/list", get(mod_hcm_data::handle_list_content))
         */
         .route("/api/data/list", get(mod_hcm_data::list_data))
+        .route("/api/data/getone", get(mod_hcm_data::getone_data))
         .route("/api/data/create", post(mod_hcm_data::create_data))
         .route("/api/data/delete", post(mod_hcm_data::delete_data))
         .route("/api/data/update", post(mod_hcm_data::update_data));
-        /*
-        .route("/api/data/getone", get(mod_hcm_data::getone_data))
-        */
         //.route("/", get(root))
         //.route("/login", get(root))
         //.route("/data", get(root))

@@ -66,6 +66,7 @@ pub struct SearchParams {
 }
 #[derive(Deserialize, Debug)]
 pub struct GetoneParams {
+    content: Option<String>,
     id: Option<String>,
 }
 
@@ -129,6 +130,64 @@ pub async fn create_data(
     };
 
     Ok(Json(todo))
+}
+
+
+/**
+*
+* @param
+*
+* @return
+*/
+pub async fn getone_data(
+    Query(params): Query<GetoneParams>,
+    headers: HeaderMap
+) -> Result<Json<Vec<Item>>, StatusCode> {
+    let id = format!("#id={:?}", params.id);
+    tracing::info!("id={}", id);
+
+    let api_key = env::var("API_KEY")
+      .expect("API_KEY must be set");
+
+    let valid = valid_authkey(headers , &api_key);
+    if valid == false {
+        tracing::info!("NG , authkey");
+        return Err(StatusCode::BAD_REQUEST);
+    }
+    let url = env::var("TURSO_DATABASE_URL").expect("TURSO_DATABASE_URL must be set");
+    let token = env::var("TURSO_AUTH_TOKEN").expect("TURSO_AUTH_TOKEN must be set");
+    println!("TURSO_DATABASE_URL={}", url);
+    let db = Builder::new_remote(url, token).build().await.unwrap();
+    let conn = db.connect().unwrap();    
+
+    let content_str: &str = params.content.as_deref().unwrap_or("");
+    let id_str: &str = params.id.as_deref().unwrap_or("");
+    let sql = format!("SELECT id, data ,created_at, updated_at 
+    FROM {}
+    WHERE id= {} ;
+    "
+    , content_str , id_str
+   );
+    tracing::info!("sql={}", &sql);
+    let mut rows = conn.query(&sql,
+        (),  // 引数なし
+    ).await.unwrap();    
+
+    let mut todos: Vec<Item> = Vec::new();
+    while let Some(row) = rows.next().await.unwrap() {
+        let id: i64 = row.get(0).unwrap();
+        let content: String = content_str.to_string();
+        let data: String = row.get(1).unwrap();
+        println!("{}: {} {}", id, content, data);
+        todos.push(Item {
+            id: id,
+            content: content,
+            data: data,
+            created_at: row.get(2).unwrap(),
+            updated_at: row.get(3).unwrap(),        
+        });        
+    }         
+    Ok(Json(todos))
 }
 
 pub async fn list_data(
