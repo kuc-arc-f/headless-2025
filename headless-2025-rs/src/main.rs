@@ -75,12 +75,11 @@ async fn main() {
 
     sqlx::query(
         r#"
-        CREATE TABLE IF NOT EXISTS todos (
+        CREATE TABLE IF NOT EXISTS hcm_data (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            content TEXT,
-            created_at TEXT,
-            updated_at TEXT
+            data  TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP            
         )
         "#,
     )

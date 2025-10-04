@@ -44,13 +44,14 @@ pub struct CreateTodo {
 
 #[derive(Debug, Deserialize)]
 pub struct DeleteTodo {
+    content: String,
     id: i64,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct UpdateTodo {
     id: i64,
-    content: Option<String>,
+    content: String,
     data: Option<String>,
 }
 #[derive(Deserialize, Debug)]
@@ -60,6 +61,7 @@ pub struct SearchParams {
 }
 #[derive(Deserialize, Debug)]
 pub struct GetoneParams {
+    content: String,
     id: Option<String>,
 }
 
@@ -128,7 +130,14 @@ pub async fn getone_data(
     headers: HeaderMap
 ) -> Result<Json<Vec<Item>>, StatusCode> {
     let id = format!("#id={:?}", params.id);
+    let content_str = params.content;
     tracing::info!("id={}", id);
+    tracing::info!("content_str={}", content_str);
+
+    let sql = format!("SELECT id, data ,created_at, updated_at 
+    FROM {} WHERE id= ?
+    ", content_str);
+    tracing::info!("sql={}", sql);
 
     let api_key = env::var("API_KEY")
       .expect("API_KEY must be set");
@@ -138,8 +147,7 @@ pub async fn getone_data(
         tracing::info!("NG , authkey");
         return Err(StatusCode::BAD_REQUEST);
     }
-    let rows = sqlx::query("SELECT * FROM hcm_data WHERE id= ? ;
-    ")
+    let rows = sqlx::query(&sql)
     .bind(&params.id)
     .fetch_all(pool.as_ref())
     .await
@@ -149,7 +157,7 @@ pub async fn getone_data(
         .into_iter()
         .map(|row| Item {
             id: row.get("id"),
-            content: row.get("content"),
+            content: content_str.to_string(),
             data: row.get("data"),
             created_at: row.get("created_at"),
             updated_at: row.get("updated_at"),
@@ -192,10 +200,9 @@ pub async fn list_data(
     }
     tracing::info!("order_sql={}", order_sql);
 
-    let sql = format!("SELECT id, content, data ,created_at, updated_at 
-    FROM hcm_data
-    WHERE content = '{}'
-    {}
+    //let sql = format!("SELECT id, content, data ,created_at, updated_at 
+    let sql = format!("SELECT id, data ,created_at, updated_at 
+    FROM {} {}
     "
     , content_str , order_sql
    );
@@ -210,7 +217,7 @@ pub async fn list_data(
         .into_iter()
         .map(|row| Item {
             id: row.get("id"),
-            content: row.get("content"),
+            content: content_str.to_string(),
             data: row.get("data"),
             created_at: row.get("created_at"),
             updated_at: row.get("updated_at"),
@@ -241,10 +248,12 @@ pub async fn create_data(
     }
 
     let now = Utc::now().format("%Y-%m-%d %H:%M:%S").to_string();
+    let content_str: &str = &payload.content;
+    let sql = format!("INSERT INTO {} (data , created_at, updated_at) VALUES (?, ?, ?)", content_str);
+    tracing::info!(sql);
 
     let result =
-        sqlx::query("INSERT INTO hcm_data (content, data , created_at, updated_at) VALUES (?, ?, ?, ?)")
-            .bind(&payload.content)
+        sqlx::query(&sql)
             .bind(&payload.data)
             .bind(&now)
             .bind(&now)
@@ -283,7 +292,13 @@ pub async fn delete_data(
         tracing::info!("NG , authkey");
         return Err(StatusCode::BAD_REQUEST);
     }
-    let result = sqlx::query("DELETE FROM hcm_data WHERE id = ?")
+
+    let content_str: &str = &payload.content;
+    let sql = format!("DELETE FROM {} WHERE id = ?", content_str);
+    tracing::info!(sql);
+
+//    let result = sqlx::query("DELETE FROM hcm_data WHERE id = ?")
+    let result = sqlx::query(&sql)
         .bind(payload.id)
         .execute(pool.as_ref())
         .await
@@ -313,11 +328,13 @@ pub async fn update_data(
     }
     let now = Utc::now().format("%Y-%m-%d %H:%M:%S").to_string();
     
-    let result = sqlx::query(
-        "UPDATE hcm_data SET data = ?, content = ?, updated_at = ? WHERE id = ?"
-    )
+    let content_str: &str = &payload.content;
+    let sql = format!("UPDATE {} SET data = ?, updated_at = ? WHERE id = ?", content_str);
+    tracing::info!(sql);
+
+    //"UPDATE hcm_data SET data = ?, content = ?, updated_at = ? WHERE id = ?"
+    let result = sqlx::query(&sql)
     .bind(&payload.data)
-    .bind(&payload.content)
     .bind(&now)
     .bind(payload.id)
     .execute(pool.as_ref())
