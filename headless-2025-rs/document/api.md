@@ -50,9 +50,27 @@ start();
 * curl sample
 * your-key: API_KEY 
 * id: id data
+* content: data type
 
-```
-curl -H "Authorization: your-key" http://localhost:3000/api/data/getone?id=1
+```js
+const start = async function() {
+  try{
+    const response = await fetch("http://localhost:3000/api/data/getone?content=todo&id=3", {
+      method: 'GET',
+      headers: {
+        'Authorization': 'your-key',
+      }
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      console.log(text)
+      throw new Error('Failed to create item');
+    }
+    const json = await response.json();
+    console.log(json)
+  }catch(e){console.log(e)}
+}
+start();
 ```
 
 ***
@@ -62,18 +80,6 @@ curl -H "Authorization: your-key" http://localhost:3000/api/data/getone?id=1
 * your-key: API_KEY 
 * content: data type
 * data: json data
-
-* data.json
-```
-{
-  "content":"test1", 
-  "data": "{\"title\": \"test-1\"}"
-}
-```
-* curl
-```
-curl -X POST -H "Content-Type: application/json" -H "Authorization: your-key" -d @data.json http://localhost:3000/api/data/create 
-```
 
 ***
 * node.js: create
@@ -114,17 +120,8 @@ start();
 * curl sample
 * your-key: API_KEY 
 * id: id data
+* content: data type
 
-* data.json
-```
-{
-  "id": 1 
-}
-```
-* curl
-```
-curl -X POST -H "Content-Type: application/json" -H "Authorization: your-key" -d @data.json http://localhost:3000/api/data/delete
-```
 ***
 * node.js: delete
 
@@ -132,7 +129,8 @@ curl -X POST -H "Content-Type: application/json" -H "Authorization: your-key" -d
 const start = async function() {
   try{
       const item = {
-        id: 1
+        content: "todo",
+        id: 2
       }
       const response = await fetch("http://localhost:3000/api/data/delete", {
       method: 'POST',
@@ -151,6 +149,7 @@ const start = async function() {
   }catch(e){console.log(e)}
 }
 start();
+
 ```
 
 ***
@@ -161,19 +160,6 @@ start();
 * id: id data
 * content: data type
 * data: json data
-
-* data.json
-```
-{
-  "id": 1,
-  "content":"test1", 
-  "data": "{\"title\": \"test-update\"}"
-}
-```
-* curl
-```
-curl -X POST -H "Content-Type: application/json" -H "Authorization: your-key" -d @data.json http://localhost:3000/api/data/update 
-```
 
 * node.js: update
 
@@ -193,7 +179,7 @@ const start = async function() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'abcdef-123456',
+        'Authorization': 'your-key',
       },
       body: JSON.stringify(item),
     });
