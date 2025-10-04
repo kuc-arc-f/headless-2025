@@ -11,8 +11,8 @@
 Rust Axum , Headless CMS
 
 * SQLite database
-* rustc 1.88.0
-* cargo 1.88.0
+* rustc 1.90.0
+* cargo 1.90.0
 
 ***
 ### API document
@@ -38,13 +38,13 @@ sqlite3 cms.db
 ```
 * create table
 ```
-CREATE TABLE IF NOT EXISTS hcm_data (
+CREATE TABLE IF NOT EXISTS todo (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    content  TEXT NOT NULL,
     data  TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)
+);
+
 ```
 ***
 * dev-start
