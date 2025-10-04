@@ -1,10 +1,10 @@
 ﻿# headless-2025
 
- Version: 0.9.1
+ Version: 0.9.2
 
  date    : 2025/09/05 
 
- update : 2025/09/10
+ update : 2025/10/04
 
 ***
 
@@ -14,7 +14,11 @@ Rust Headless CMS , example
 * cargo 1.88.0
 
 ***
+### change Log
+
+* VER 0.9.1 -- new
+
+***
 ### blog
 
 ***
-
